@@ -6,25 +6,37 @@ import pdftotext
 import re
 import os
 from tqdm import tqdm
+import argparse
+
 
 def is_ascii(s):
+    '''
+    Check if a character is ASCII or not
+    Args:
+        s: char to check
+    Returns:
+        boolean
+    '''
     return all(ord(c) < 128 for c in s)
 
 def read_pdf(folder,output_file):
+    '''
+    Convert pdf files to .csv with Document ID, Page ID, Sentence ID
+    Args:
+        folder: folder of pdf files
+        output_file: csv output file name
+    Returns:
+        text_df: dataframe
+    '''
     #read pdf files in a folder ONLY UP TO TABLE OF CONTENT (wellname tagging) with pdftotext
     text_data=[]
     results=[]
-
-    # files = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
-    # print('list of files: ', files)
-
 
     file_list=[]
     for root, dirs, files in os.walk(folder):
         for file in files:
             file_list.append(os.path.join(root,file))
 
-    # print('File list: ', file_list)
     print('Number of files: ', len(file_list))
     files = list(filter(lambda f: f.endswith(('.pdf','.PDF')), file_list))
 
@@ -65,7 +77,6 @@ def read_pdf(folder,output_file):
                                     Doc_ID=i,
                                     Page_ID=page,
                                     Sent_ID=index,
-                                    # ID = txt_id,
                                     Text=doc.replace(';',','),
                                     File = file,
                                     Abs_path = os.path.abspath(file)
@@ -82,8 +93,17 @@ def read_pdf(folder,output_file):
     text_df.to_csv(output_file, index=False)
     return text_df
 
-#main program
-folder="./data"
-output_file='facilities_text.csv'
-read_pdf(folder,output_file)
-print('Done')
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+
+    ap.add_argument("-i", type=str, required=True, help="folder where pdf files are located")
+    ap.add_argument("-o", type=str, required=False, help="output file name")
+    args = ap.parse_args()
+
+    folder = args.i
+    output_file = args.o
+
+    # folder="./data"
+    # output_file='facilities_text.csv'
+    text_df = read_pdf(folder,output_file)
+    print('Done')

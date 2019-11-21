@@ -3,6 +3,11 @@ Train Word2Vec and FastText word embedding model
 
 How to run the code:
 ``` 
+python3 convert_pdf_text.py -i [directory] -o [output_file_name]
+
+``` 
+
+``` 
 python3 word_embedding.py -m [model_type] -sg [0 or 1]
 ```
 
@@ -17,6 +22,11 @@ If the model is in .txt format, type model_type as the file name
 
 
 Example:
+``` 
+python3 convert_pdf_text.py -i ./data -o text.csv
+
+``` 
+
 ``` 
 python3 word_embedding.py -m word2vec -sg 0
 ```
