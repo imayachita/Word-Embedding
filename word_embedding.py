@@ -3,6 +3,8 @@ import re
 import pandas as pd
 import sys
 import argparse
+import numpy as np
+from tqdm import tqdm
 
 from gensim.models import Word2Vec
 from gensim.models.fasttext import FastText
@@ -16,8 +18,10 @@ import os
 from os.path import isfile, join
 import time
 from datetime import timedelta
+from convert_pdf_txt import read_pdf
 
-def import_raw_data(path, fname):
+
+def import_raw_data(fname):
     '''
     Assumes the first column in the CSV is the text data and reads into
     this script.
@@ -29,9 +33,9 @@ def import_raw_data(path, fname):
         raw_data (list): list of loaded data
     '''
     raw_data = []
-    df = pd.read_csv(os.path.join(path,fname))
+    df = pd.read_csv(fname)
     raw_data = df['Text'].values
-    print('Number of sentences: ', len(raw_data))
+    # print('Number of sentences: ', len(raw_data))
     return raw_data
 
 
@@ -42,15 +46,23 @@ def combine_txt(path,output_file_name):
         path: the folder contains all the text files
         output_file_name: file name of the output file
     '''
-    filenames = [f for f in os.listdir(path) if isfile(join(path, f))]
+    file_list = [f for f in os.listdir(path) if isfile(join(path, f))]
+    # print('file_list: ', file_list)
+    filenames = list(filter(lambda f: f.endswith(('.txt','.TXT')), file_list))
+    # print('filenames: ', filenames)
 
     with open(output_file_name, 'w',encoding='utf-8',errors='ignore') as outfile:
-        for fname in filenames:
-            print('File: ', fname)
-            with open(path+'/'+fname,encoding='utf-8',errors='ignore') as infile:
+        print('combining text files into 1 file ....')
+        for fname in tqdm(filenames):
+            # print('File: ', fname)
+            with open(os.path.join(path,fname),encoding='utf-8',errors='ignore') as infile:
                 for line in infile:
                     outfile.write(line)
                 outfile.write('\n\n')
+
+    data = read_txt_file(output_file_name)
+    # print(data)
+    return data
 
 
 def clean_specialLetters(text):
@@ -80,7 +92,7 @@ def remove_numbers(text):
     return removed
 
 
-def read_txt_file(data):
+def read_txt_file(fname):
     """
     Open the combined corpus and save it to list
 
@@ -91,7 +103,7 @@ def read_txt_file(data):
 
     """
 
-    f = open(data,'r',encoding='utf-8')
+    f = open(fname,'r',encoding='utf-8')
     data_list = f.read()
     f.close()
     data_list = sent_tokenize(data_list)
@@ -269,38 +281,81 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
 
     ap.add_argument("-m", type=str, required=True, help="model type either word2vec or fasttext")
-    ap.add_argument("-sg", type=str, required=False, help="choose 0 for CBOW or 1 for Skip-gram. Not required if model type is txt file")
+    ap.add_argument("-sg", type=str, required=True, help="choose 0 for CBOW or 1 for Skip-gram. Not required if model type is txt file")
+    ap.add_argument("-s", type=str, required=False, help="stopwords file")
+    ap.add_argument("-p", type=str, required=False, help="data path")
+    ap.add_argument("-epoch", type=int, required=True, help="number of epochs")
+
+    
     args = ap.parse_args()
 
     model_type = args.m
     sg = args.sg
-    
-    # model_type=sys.argv[1]
-    # sg=sys.argv[2] #skipgram or cbow. sg=0 corresponds to CBOW, sg=0 corresponds to skipgram
-    path = './data/'
-    out_file = 'facilities_text.txt'
-    model_dir = './facilities_model/'
+    stopwords_file = args.s
+    path = args.p
+    n_iter = args.epoch
+
+
+    # path = './data/'
+    out_file_txt = 'combined_text.txt'
+    out_file_pdf = 'combined_pdf.txt'
+    model_dir = './model/'
 
     assert model_type=='word2vec' or model_type=='fasttext', "model type must be word2vec or fasttext."
     assert sg=='1' or sg=='0', "sg must be 1 for skip-gram or 0 for CBOW"
+
+    file_list=[]
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            file_list.append(os.path.join(root,file))
+    print('File list: ', file_list)
+    assert len(file_list)>0, "Data folder is empty."
+
+    txt_flag = 0
+    pdf_flag = 0
+    for f in file_list:
+        if '.txt' in f:
+            txt_flag = 1
+        elif '.pdf' in f:
+            pdf_flag = 1
 
     if sg=='1':
         model_name = 'model_'+model_type+'_sg'
     elif sg=='0':
         model_name = 'model_'+model_type
 
-    stopwords_file = 'stopwords.txt'
+    # print(txt_flag,pdf_flag)
+    if len(file_list) > 1:
+        if txt_flag == 1 and pdf_flag == 0:
+            raw_data_list = combine_txt(path,out_file_txt)
+        elif pdf_flag == 1 and txt_flag == 0:
+            data_pdf = read_pdf(path,out_file_pdf)
+            raw_data_list = data_pdf['Text'].values
+        else:
+            data_txt = combine_txt(path,out_file_txt)
+            data_pdf = read_pdf(path,out_file_pdf)
+            data_pdf = data_pdf['Text'].values
+            raw_data_list = np.concatenate((data_txt,data_pdf),axis=0)
+    else:
+        assert '.txt' in file_list[0] or '.csv' in file_list[0] or '.pdf' in file_list[0], "File must be .txt or .csv or .pdf"
+        print(file_list[0])
+        if '.txt' in file_list[0]:
+            raw_data_list = read_txt_file(file_list[0])
+        elif '.csv' in file_list[0]:
+            raw_data_list = import_raw_data(file_list[0])
+        else:
+            data_pdf = read_pdf(path,out_file_pdf)
+            raw_data_list = data_pdf['Text'].values
 
-    # combine_txt(path,out_file)
-    # raw_data_list = read_txt_file(out_file)
 
-    fname = 'facilities_text.csv'
-    raw_data_list = import_raw_data(path, fname)
+    print('Number of Sentences: ', len(raw_data_list))
+
+    # fname = 'facilities_text.csv'
     clean_data = clean_data(raw_data_list,stopwords_file)
     training_data = Train_Phraser(clean_data)
 
     training_data = tokenize(training_data)
-    model = train(train_data=training_data,iter=300,sg=sg,model=model_type)
+    model = train(train_data=training_data,iter=n_iter,sg=sg,model=model_type)
     save_embedding_model(model,model_dir,model_name)
 
     print ('Elapsed Time:', str(timedelta(seconds=(time.time()-start_time))))
