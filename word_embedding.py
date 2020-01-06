@@ -132,7 +132,7 @@ def remove_stopwords(text,stopwords_file):
     return filtered_words
 
 
-def clean_data(raw_data_list,stopwords_file):
+def clean_data(raw_data_list,stopwords_file=None):
     """
     Clean the raw data by removing special characters and numbers
 
@@ -149,7 +149,9 @@ def clean_data(raw_data_list,stopwords_file):
         pro_text = remove_numbers(pro_text)
         clean_data_list.append(pro_text)
 
-    clean_data_list = remove_stopwords(clean_data_list,stopwords_file)
+    if stopwords_file != None:
+        clean_data_list = remove_stopwords(clean_data_list,stopwords_file)
+
     return clean_data_list
 
 
@@ -267,10 +269,10 @@ def save_embedding_model(model,model_dir,model_name):
         model_dir: word embedding model directory
         model_name: model name
     """
-    print('Saving model', model_name, ' .....')
     model_dir = Path(model_dir)
     if not model_dir.exists():
         model_dir.mkdir()
+    print('Saving model in ', model_dir, ' .....')
     model.save(os.path.join(model_dir, '{}.bin'.format(model_name)))
     model.wv.save_word2vec_format(os.path.join(model_dir, '{}.txt'.format(model_name)))
 
@@ -286,7 +288,7 @@ if __name__ == "__main__":
     ap.add_argument("-p", type=str, required=False, help="data path")
     ap.add_argument("-epoch", type=int, required=True, help="number of epochs")
 
-    
+
     args = ap.parse_args()
 
     model_type = args.m
@@ -308,7 +310,7 @@ if __name__ == "__main__":
     for root, dirs, files in os.walk(path):
         for file in files:
             file_list.append(os.path.join(root,file))
-    print('File list: ', file_list)
+    # print('File list: ', file_list)
     assert len(file_list)>0, "Data folder is empty."
 
     txt_flag = 0

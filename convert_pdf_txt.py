@@ -43,6 +43,7 @@ def read_pdf(folder,output_file):
     txt_id=0
     num_corrupted_files = 0
 
+    print("converting pdf files to 1 csv file ...")
     for i,file in enumerate(tqdm(files)):
         # pdfFileObj = open(os.path.join(folder,file), 'rb')
         pdfFileObj = open(file, 'rb')

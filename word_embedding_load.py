@@ -49,13 +49,18 @@ if __name__ == "__main__":
     ap.add_argument("-m", type=str, required=True, help="model type")
     ap.add_argument("-sg", type=str, required=False, help="choose 0 for CBOW or 1 for Skip-gram. Not required if model type is txt file")
     ap.add_argument("-w", nargs='+', required=True, help="words to search")
+    ap.add_argument("-p", type=str, required=True, help="model path")
+    ap.add_argument("-topn", type=int, required=False, help="Top-N most similar words. Default: 20")
+
+
     args = ap.parse_args()
 
     model_type = args.m
     sg = args.sg
     words = args.w
+    model_dir = args.p
+    topn = args.topn
 
-    model_dir = './facilities_model/'
 
     if '.txt' in model_type:
         model_name = model_type
@@ -72,4 +77,4 @@ if __name__ == "__main__":
 
     for word in words:
         print('\nWord to search: ', word, '\n')
-        print('Most similar words: ', most_similar_words(word,model), '\n')
+        print('Most similar words: ', most_similar_words(word,model,topn), '\n')
