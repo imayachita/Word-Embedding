@@ -31,7 +31,7 @@ def load_model(model_dir, model_name,model_type='fasttext'):
             return model
 
 
-def most_similar_words(word,model,topn=20):
+def most_similar_words(word,model,topn=10):
     '''
     Find the associated filtered_words
     Args:
@@ -39,7 +39,8 @@ def most_similar_words(word,model,topn=20):
         model: word embedding model
         topn: the top n associated words to search
     '''
-    return model.most_similar(word,topn=topn)
+    x = model.most_similar(word,topn=10)
+    return x
 
 
 if __name__ == "__main__":
