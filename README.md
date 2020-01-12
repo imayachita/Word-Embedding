@@ -1,6 +1,6 @@
 # Word-Embedding
-Train Word2Vec and FastText word embedding model
-The models are trained on 5 Game of Thrones books (A Song of Ice and Fire).
+Train Word2Vec and FastText word embedding model <br>
+The models are trained on 5 Game of Thrones books (A Song of Ice and Fire). <br>
 There are 4 models trained:
 1. Word2Vec with CBOW (Continuous Bag of Words)
 2. Word2Vec with Skip-Gram
@@ -34,19 +34,19 @@ python convert_pdf_text.py -i [directory] -o [output_file_name]
 ``` 
 
 
-Model Type must be either "word2vec" or "fasttext"
-SG must be either 0 (for CBOW) or 1 (for Skip-Gram)
-The code will load model in .bin format
-If the model is in .txt format, type model_type as the file name.
-We can search for multiple words and phrases
-- To search for multiple words, separate different words with space
+Model Type must be either "word2vec" or "fasttext". <br>
+SG equals to 0 refers to for CBOW and 1 refers to Skip-Gram. <br>
+The code will load model in .bin format. <br>
+If the model is in .txt format, type model_type as the file name. <br>
+Default ```topn``` is 10, based on Gensim documentation. <br>
+We can search for multiple words and phrases. <br>
+- To search for multiple words, separate different words with space <br>
 - To search for phrases, separate multiple words within a phrase with underscore
 
 
 Example:
 ``` 
 python convert_pdf_text.py -i ./data -o text.csv
-
 ``` 
 
 ``` 
@@ -71,8 +71,13 @@ Word to search:  jon_snow
 Most similar words:  [('jon', 0.44456174969673157), ('bran', 0.2948411703109741), ('castle_black', 0.2853333055973053), ('man', 0.2648966908454895), ('wall', 0.25946474075317383), ('mance', 0.25083184242248535), ('winterfell', 0.24593092501163483), ('night_watch', 0.24114950001239777), ('crow', 0.23541709780693054), ('alfyn_crowkiller', 0.2346397042274475)] 
 ```
 
+Another example with FastText model:
 ```
 python word_embedding_load.py -m fasttext -sg 0 -w stark jon_snow -p ./GOT_model
+```
+
+Result:
+```
 Model name:  model_fasttext
 
 Word to search:  stark 
@@ -85,8 +90,13 @@ Word to search:  jon_snow
 Most similar words:  [('jon_snow_ygritte', 0.6690560579299927), ('jon_snow_reflected', 0.561360776424408), ('jon', 0.5090968608856201), ('fallen_snow', 0.42110997438430786), ('night_watch', 0.39625218510627747), ('night_watch_takes', 0.3886195421218872), ('lord_snow', 0.3877685070037842), ('lord_commander_night_watch', 0.37715011835098267), ('benjen_stark', 0.37189415097236633), ('wildlings', 0.35399898886680603)] 
 ```
 
+Another example with Skip-Gram:
 ```
 python word_embedding_load.py -m word2vec -sg 1 -w stark jon_snow -p ./GOT_model
+```
+
+Result:
+```
 Model name:  model_word2vec_sg
 
 Word to search:  stark 
