@@ -2,6 +2,6 @@ nltk==3.4.5
 pandas==0.24.2
 numpy==1.16.5
 tqdm==4.36.1
-PyPDF2==1.26.0
+PyPDF2==1.27.5
 gensim==3.8.1
 pdftotext==2.1.2
